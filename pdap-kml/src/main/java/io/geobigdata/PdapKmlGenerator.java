@@ -121,7 +121,7 @@ public class PdapKmlGenerator
     	//System.out.println(kml.toString());
     	
     	//kml.marshal(System.out);
-    	kml.marshal(new File("/tmp/HelloKml.kml"));
+    	//kml.marshal(new File("/tmp/HelloKml.kml"));
     	
     }
 
