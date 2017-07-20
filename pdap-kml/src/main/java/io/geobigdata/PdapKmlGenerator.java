@@ -61,7 +61,7 @@ public class PdapKmlGenerator
 		return aT;
 	}
 	
-	public Kml createKml(InputStream metadataInputStream) throws IOException, ParseException{
+	public Kml createKml(InputStream metadataInputStream, String token, String graphId, String nodeId) throws IOException, ParseException{
 		
 		JSONParser jp = new JSONParser();
 		
@@ -101,7 +101,7 @@ public class PdapKmlGenerator
     			int randomNum = ThreadLocalRandom.current().nextInt(0, 41 + 1);
     			
     			Icon catIcon = new Icon();
-    			catIcon.setHref("http://fourier.eng.hmc.edu/e161/imagedata/CatsDogs/Cats/cat41.tif");
+    			catIcon.setHref("https://idaho-api.geobigdata.io/v1/tile/"+graphId+"/"+nodeId+"/"+tileX+"/"+tileY+".tif?token="+token);
     			document.createAndAddGroundOverlay().withLatLonBox(bbox).withIcon(catIcon);
     			
     		}
@@ -116,7 +116,7 @@ public class PdapKmlGenerator
     	InputStream is = a.getClass().getClassLoader().getResourceAsStream(args[0]);
         
 		
-		Kml kml = a.createKml(is);
+		//Kml kml = a.createKml(is, null);
     	
     	//System.out.println(kml.toString());
     	
