@@ -10,6 +10,10 @@ import java.io.InputStreamReader;
 
 
 
+
+
+
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -17,7 +21,15 @@ import org.json.simple.parser.ParseException;
 
 
 
+
+
+
+
+import de.micromata.opengis.kml.v_2_2_0.Document;
+import de.micromata.opengis.kml.v_2_2_0.Icon;
 import de.micromata.opengis.kml.v_2_2_0.Kml;
+import de.micromata.opengis.kml.v_2_2_0.LatLonAltBox;
+import de.micromata.opengis.kml.v_2_2_0.LatLonBox;
 
 public class App 
 {
@@ -87,7 +99,7 @@ public class App
 		minYTile = (Long) georeferencing.get("minTileY");
 	}
 
-	public AffineTransform setAffine(JSONObject georeferencing) throws IOException, ParseException{
+	public AffineTransform createAffine(JSONObject georeferencing) throws IOException, ParseException{
 		
 		Double scaleX = (Double) georeferencing.get("scaleX");
 		Double scaleY = (Double) georeferencing.get("scaleY");
@@ -131,35 +143,79 @@ public class App
 		return p;
 	}
 	
+	public Kml createKml(InputStream metadataInputStream) throws IOException, ParseException{
+		JSONParser jp = new JSONParser();
+		
+		JSONObject obj = (JSONObject) jp.parse(new InputStreamReader(metadataInputStream));
+		JSONObject georeferencing = (JSONObject) obj.get("imageGeoreferencing"); //will this name change??
+    	JSONObject metadata = (JSONObject) obj.get("imageMetadata");
+		
+		
+		setAllVars(metadata);
+		
+
+		AffineTransform at = createAffine(georeferencing);   
+    	
+		//Point2D[] p = new Point2D[(int) (getxTiles() * getyTiles())];
+    	//p = transform(at, setCoordinates(georeferencing));
+    	
+    	
+    	final Kml kml = new Kml();
+    	Document document = kml.createAndSetDocument();
+    	
+    	for(long tileY=minYTile;tileY<minYTile+yTiles;tileY++){
+    		for(long tileX=minXTile;tileX<minXTile+xTiles;tileX++){
+    			Double left = (double) (tileX*sizeXTiles);
+    			Double right = left+sizeXTiles;
+    			Double top = (double) (tileY*sizeYTiles);
+    			Double bottom = top+sizeYTiles;
+    			
+    			Point2D.Double ul = (java.awt.geom.Point2D.Double) at.transform(new Point2D.Double(left, top), null);
+    			Point2D.Double lr = (java.awt.geom.Point2D.Double) at.transform(new Point2D.Double(right,bottom), null);
+    			
+    			LatLonBox bbox = new LatLonBox();
+    			bbox.setWest(ul.getX());
+    			bbox.setEast(lr.getX());
+    			bbox.setNorth(ul.getY());
+    			bbox.setSouth(lr.getY());
+    			
+    			Icon catIcon = new Icon();
+    			catIcon.setHref("http://fourier.eng.hmc.edu/e161/imagedata/CatsDogs/Cats/cat41.tif");
+    			document.createAndAddGroundOverlay().withLatLonBox(bbox).withIcon(catIcon);
+    		}
+    	}
+    	//how many place mark do we need?
+    	/*
+    	for(int i = 0; i < p.length; i++){
+    		
+    		//LatLonBox bbox = new LatLonBox();
+    		//bbox.setNorth(value);
+    		
+    		//document.createAndAddGroundOverlay().withLatLonBox(latLonBox)
+    		
+    		
+    		//document.createAndAddNetworkLink().withName("test123-"+i);
+    		 * }
+    		 */
+    		
+    		
+	
+    	
+    	return kml;
+	}
+	
     public static void main( String[] args ) throws IOException, ParseException
     {
     	App a = new App();   	
     	InputStream is = a.getClass().getClassLoader().getResourceAsStream(args[0]);
         
-		JSONParser jp = new JSONParser();
 		
-		JSONObject obj = (JSONObject) jp.parse(new InputStreamReader(is));
-		JSONObject georeferencing = (JSONObject) obj.get("imageGeoreferencing"); //will this name change??
-    	JSONObject metadata = (JSONObject) obj.get("imageMetadata");
-		
-		
-		a.setAllVars(metadata);
-		
-		AffineTransform at = a.setAffine(georeferencing);   
-    	Point2D[] p = new Point2D[(int) (a.getxTiles() * a.getyTiles())];
-    	p = a.transform(at, a.setCoordinates(georeferencing));
+		Kml kml = a.createKml(is);
     	
+    	System.out.println(kml.toString());
     	
-    	final Kml kml = new Kml();
-    	//how many place mark do we need?
-    	for(int i = 0; i < p.length; i++){
-    		kml.createAndSetPlacemark()
-     	   .withName("London, UK"+i).withOpen(Boolean.TRUE)
-     	   .createAndSetPoint().addToCoordinates(p[i].getX(), p[i].getY()); 
-    		System.out.println("Added placemark...");
-    	}
-    	
-    	kml.marshal(new File("HelloKml.kml"));
+    	kml.marshal(System.out);
+    	kml.marshal(new File("/tmp/HelloKml.kml"));
     	
     }
 
