@@ -84,7 +84,6 @@ public class PdapKmlGenerator
     	
     	for(long tileY=minTileY;tileY<minTileY+numYTiles;tileY++){
     		for(long tileX=minTileX;tileX<minTileX+numXTiles;tileX++){
-    			System.out.println(tileX+" :: "+tileY);
     			Double left = (double) (tileX*tileXSize);
     			Double right = left+tileXSize;
     			Double top = (double) (tileY*tileYSize);
@@ -98,9 +97,7 @@ public class PdapKmlGenerator
     			bbox.setEast(lr.getX());
     			bbox.setNorth(ul.getY());
     			bbox.setSouth(lr.getY());
-    			
-    			System.out.println(bbox.getWest()+" :: "+bbox.getEast());
-    			
+    			    			
     			int randomNum = ThreadLocalRandom.current().nextInt(0, 41 + 1);
     			
     			Icon catIcon = new Icon();
@@ -121,7 +118,7 @@ public class PdapKmlGenerator
 		
 		Kml kml = a.createKml(is);
     	
-    	System.out.println(kml.toString());
+    	//System.out.println(kml.toString());
     	
     	//kml.marshal(System.out);
     	kml.marshal(new File("/tmp/HelloKml.kml"));
