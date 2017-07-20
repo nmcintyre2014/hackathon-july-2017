@@ -70,37 +70,28 @@ public class PdapKmlGenerator
 		JSONObject georeferencing = (JSONObject) obj.get("imageGeoreferencing"); 
 		
 		
-		Long xTiles =  (Long) imageMetadata.get("numXTiles");
-		Long yTiles = (Long) imageMetadata.get("numYTiles");
-		Long sizeXTiles = (Long) imageMetadata.get("tileXSize");
-		Long sizeYTiles = (Long) imageMetadata.get("tileXSize");
-		Long minXTile = (Long) imageMetadata.get("minTileX");
-		Long minYTile = (Long) imageMetadata.get("minTileY");
+		Long numXTiles =  (Long) imageMetadata.get("numXTiles");
+		Long numYTiles = (Long) imageMetadata.get("numYTiles");
+		Long tileXSize = (Long) imageMetadata.get("tileXSize");
+		Long tileYSize = (Long) imageMetadata.get("tileXSize");
+		Long minTileX = (Long) imageMetadata.get("minTileX");
+		Long minTileY = (Long) imageMetadata.get("minTileY");
 
 		AffineTransform at = createAffineTransform(georeferencing);   
     	
     	final Kml kml = new Kml();
     	Document document = kml.createAndSetDocument();
     	
-    	for(long tileY=minYTile;tileY<minYTile+yTiles;tileY++){
-    		for(long tileX=minXTile;tileX<minXTile+xTiles;tileX++){
+    	for(long tileY=minTileY;tileY<minTileY+numYTiles;tileY++){
+    		for(long tileX=minTileX;tileX<minTileX+numXTiles;tileX++){
     			System.out.println(tileX+" :: "+tileY);
-    			Double left = (double) (tileX*sizeXTiles);
-    			Double right = left+sizeXTiles;
-    			Double top = (double) (tileY*sizeYTiles);
-    			Double bottom = top+sizeYTiles;
+    			Double left = (double) (tileX*tileXSize);
+    			Double right = left+tileXSize;
+    			Double top = (double) (tileY*tileYSize);
+    			Double bottom = top+tileYSize;
     			
     			Point2D.Double ul = (java.awt.geom.Point2D.Double) at.transform(new Point2D.Double(left, top), null);
     			Point2D.Double lr = (java.awt.geom.Point2D.Double) at.transform(new Point2D.Double(right,bottom), null);
-    			
-    			/*
-    			Coordinate c = new Coordinate(ul.x, ul.y);
-    			List<Coordinate> coords = new ArrayList<Coordinate>();
-    			coords.add(c);
-    			Placemark pm = document.createAndAddPlacemark();
-    			pm.createAndSetPoint().withCoordinates(coords);
-    			*/
-    			
     			
     			LatLonBox bbox = new LatLonBox();
     			bbox.setWest(ul.getX());
@@ -113,7 +104,7 @@ public class PdapKmlGenerator
     			int randomNum = ThreadLocalRandom.current().nextInt(0, 41 + 1);
     			
     			Icon catIcon = new Icon();
-    			catIcon.setHref("http://fourier.eng.hmc.edu/e161/imagedata/CatsDogs/Cats/cat"+randomNum+".tif");
+    			catIcon.setHref("http://fourier.eng.hmc.edu/e161/imagedata/CatsDogs/Cats/cat41.tif");
     			document.createAndAddGroundOverlay().withLatLonBox(bbox).withIcon(catIcon);
     			
     		}
